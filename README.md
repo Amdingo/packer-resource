@@ -1,20 +1,27 @@
 # Packer Build Resource
 
-A Concourse CI resource to build new [Amazon Machine Images (AMI) via Packer](https://www.packer.io/docs/builders/amazon.html)
+A Concourse CI resource to build new [VMWare templates via Packer](https://www.packer.io/docs/post-processors/vsphere-template.html)
 
 ## Source Configuration
+### Required
 
-- `aws_access_key_id`: Your AWS access key ID.
+- `host (string)` - The vSphere host that contains the VM built by the vmware-iso.
 
-- `aws_secret_access_key`: Your AWS secret access key.
+- `password (string)` - Password to use to authenticate to the vSphere endpoint.
 
-- `region`: *Required.* The AWS region to search for AMIs.
+- `username (string)` - The username to use to authenticate to the vSphere endpoint.
 
-If `aws_access_key_id` and `aws_secret_access_key` are not provided [packer will use credentials provided by the worker's IAM profile, if it has one](https://www.packer.io/docs/builders/amazon.html#using-an-iam-instance-profile).
+### Optional
+
+- `datacenter (string)` - If you have more than one, you will need to specify which one the ESXi used.
+
+- `folder (string)` - Target path where the template will be created.
+
+- `insecure (boolean)` - If it's true skip verification of server certificate. Default is false
 
 ## Behaviour
 
-### `out`: Build a new AMI
+### `out`: Build a new VMWare template
 
 #### Parameters
 - `template`: *Required.* The path to the packer template.
@@ -29,22 +36,25 @@ resource_types:
 - name: packer
   type: docker-image
   source:
-    repository: jdub/packer-resource
+    repository: amdingo/vmware-packer-resource
 
 resources:
 - name: build-ami
   type: packer
   source:
-    aws_access_key_id: "..."
-    aws_secret_access_key: "..."
-    region: ap-southeast-2
-
+    host: "vsphere.mycompany.com"
+    username: "..."
+    password: "..."
+    datacenter: "datacenter1"
+    folder: "/packer-templates/os/distro-1"
+    insecure: true
+    
 jobs:
-- name: my-ami
+- name: my-template
   plan:
-  - put: build-ami
+  - put: build-template
     params:
-      template: packer_template.json
+      template: vmware_packer_template.json
       var_file:
          - secrets.json
          - foo.json
