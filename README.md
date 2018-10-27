@@ -1,3 +1,5 @@
+Currently in the process of including other post-processors (vagrant first)
+
 # Packer Build Resource
 
 A Concourse CI resource to build new [VMWare templates via Packer](https://www.packer.io/docs/post-processors/vsphere-template.html)
